@@ -1,0 +1,15 @@
+# ===== 编译产物 =====
+out/
+
+# ===== Keil / 调试器个人配置 =====
+project/*.uvgui.*
+project/*.uvopt
+project/*.uvoptx
+project/JLinkLog.txt
+project/JLinkSettings.ini
+project/EventRecorderStub.scvd
+project/build_log.txt
+*.build_log.htm
+
+# ===== 历史版本备份库（非当前工程必需） =====
+app/src/back/
