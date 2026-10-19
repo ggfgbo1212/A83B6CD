@@ -8,6 +8,7 @@
 #define ZR_I2C_H
 
 #include "system.h"
+#include <stdbool.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -72,21 +73,19 @@ extern "C" {
 #define I2C_S_TX_FIFO_FULL          (0x80000000)
 #define I2C_S_RX_FIFO_RESET         (0x00000100)
 #define I2C_S_TX_FIFO_RESET         (0x01000000)
+
+
+//!< force pulldown disable
+#define I2C_S_FORCE_SCL_DIS (0x00000000)
+//!< force pulldown enable
+#define I2C_S_FORCE_SCL_EN (0x00010000)
+
+//!< wait disable
+#define I2C_S_WAIT_DIS (0x00000000)
+//!< wait enable
+#define I2C_S_WAIT_EN (0x00008000)
+
 // clang-format on
-
-/** i2c slave force scl pulldown */
-typedef enum
-{
-    I2C_S_FORCE_SCL_DIS = (uint8_t)(0x00000000),        //!< force pulldown disable
-    I2C_S_FORCE_SCL_EN = (uint8_t)(0x00010000)          //!< force pulldown enable
-} i2cs_scl_pulldown_e;
-
-/** i2c slave wait */
-typedef enum
-{
-    I2C_S_WAIT_DIS = (uint8_t)(0x00000000),        //!< wait disable
-    I2C_S_WAIT_EN = (uint8_t)(0x00008000)          //!< wait enable
-} i2cs_wait_e;
 
 /** i2cm config */
 typedef struct
@@ -99,8 +98,8 @@ typedef struct
 typedef struct
 {
     uint8_t devAddr;                        //!< devAddr, I2C slave own device address
-    i2cs_scl_pulldown_e sclPulldown;        //!< sclPulldown, whether force scl pulldown
-    i2cs_wait_e wait;                       //!< wait, whether enable slave wait
+    bool isSclPulldown;                     //!< SCL Pulldown, whether force SCL pulldown
+    bool isWait;                            //!< wait, whether enable slave wait
 } i2cs_config_t;
 
 /**

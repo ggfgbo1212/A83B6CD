@@ -377,9 +377,9 @@
             <v6Rtti>0</v6Rtti>
             <VariousControls>
               <MiscControls>-mfloat-abi=soft -Wno-extra-semi-stmt -Wno-declaration-after-statement -Wno-padded  -Wno-covered-switch-default -Wno-cast-align -Wno-missing-variable-declarations -Wno-switch-enum -Wno-date-time</MiscControls>
-              <Define></Define>
+              <Define>CUSTOMIZE_CFG,</Define>
               <Undefine></Undefine>
-              <IncludePath>..\app\inc;..\common\inc;..\lib\inc;..\policy\inc;..\common\inc;..\core\inc;..\system\inc;..\lib\inc;..\pd\inc;..\user\inc;..\ic_lib\inc;..\project;..\my\i2c_ota_slave</IncludePath>
+              <IncludePath>..\app\inc;..\common\inc;..\lib\inc;..\policy\inc;..\common\inc;..\core\inc;..\system\inc;..\lib\inc;..\pd\inc;..\lenevo_sink\inc;..\user\inc;..\uvdm</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -443,20 +443,15 @@
               <FileType>1</FileType>
               <FilePath>.\serial.c</FilePath>
             </File>
-            <File>
-              <FileName>user_pd_policy.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\user_pd_policy.c</FilePath>
-            </File>
           </Files>
         </Group>
         <Group>
           <GroupName>app</GroupName>
           <Files>
             <File>
-              <FileName>SW356x_v1.4.0.lib</FileName>
+              <FileName>SW356x_v1.7.1.lib</FileName>
               <FileType>4</FileType>
-              <FilePath>..\app\src\SW356x_v1.4.0.lib</FilePath>
+              <FilePath>..\app\src\SW356x_v1.7.1.lib</FilePath>
             </File>
           </Files>
         </Group>
@@ -464,232 +459,34 @@
           <GroupName>user</GroupName>
           <Files>
             <File>
-              <FileName>device_drive.c</FileName>
+              <FileName>iic_slave_policy.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\user\src\device_drive.c</FilePath>
+              <FilePath>..\user\src\iic_slave_policy.c</FilePath>
             </File>
             <File>
-              <FileName>device_policy.c</FileName>
+              <FileName>slave_policy_drive.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\user\src\device_policy.c</FilePath>
+              <FilePath>..\user\src\slave_policy_drive.c</FilePath>
             </File>
             <File>
-              <FileName>power_alloc.c</FileName>
+              <FileName>source_policy.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\user\src\power_alloc.c</FilePath>
+              <FilePath>..\user\src\source_policy.c</FilePath>
             </File>
             <File>
-              <FileName>device_com.c</FileName>
+              <FileName>i2c_ota_policy.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\user\src\device_com.c</FilePath>
-            </File>
-          </Files>
-        </Group>
-        <Group>
-          <GroupName>ic_lib</GroupName>
-          <Files>
-            <File>
-              <FileName>ic_lib_rely.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\ic_lib\src\ic_lib_rely.c</FilePath>
-            </File>
-            <File>
-              <FileName>pd_ufcs_pdo.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\ic_lib\src\pd_ufcs_pdo.c</FilePath>
-              <FileOption>
-                <CommonProperty>
-                  <UseCPPCompiler>2</UseCPPCompiler>
-                  <RVCTCodeConst>0</RVCTCodeConst>
-                  <RVCTZI>0</RVCTZI>
-                  <RVCTOtherData>0</RVCTOtherData>
-                  <ModuleSelection>0</ModuleSelection>
-                  <IncludeInBuild>0</IncludeInBuild>
-                  <AlwaysBuild>2</AlwaysBuild>
-                  <GenerateAssemblyFile>2</GenerateAssemblyFile>
-                  <AssembleAssemblyFile>2</AssembleAssemblyFile>
-                  <PublicsOnly>2</PublicsOnly>
-                  <StopOnExitCode>11</StopOnExitCode>
-                  <CustomArgument></CustomArgument>
-                  <IncludeLibraryModules></IncludeLibraryModules>
-                  <ComprImg>1</ComprImg>
-                </CommonProperty>
-                <FileArmAds>
-                  <Cads>
-                    <interw>2</interw>
-                    <Optim>0</Optim>
-                    <oTime>2</oTime>
-                    <SplitLS>2</SplitLS>
-                    <OneElfS>2</OneElfS>
-                    <Strict>2</Strict>
-                    <EnumInt>2</EnumInt>
-                    <PlainCh>2</PlainCh>
-                    <Ropi>2</Ropi>
-                    <Rwpi>2</Rwpi>
-                    <wLevel>0</wLevel>
-                    <uThumb>2</uThumb>
-                    <uSurpInc>2</uSurpInc>
-                    <uC99>2</uC99>
-                    <uGnu>2</uGnu>
-                    <useXO>2</useXO>
-                    <v6Lang>0</v6Lang>
-                    <v6LangP>0</v6LangP>
-                    <vShortEn>2</vShortEn>
-                    <vShortWch>2</vShortWch>
-                    <v6Lto>2</v6Lto>
-                    <v6WtE>2</v6WtE>
-                    <v6Rtti>2</v6Rtti>
-                    <VariousControls>
-                      <MiscControls></MiscControls>
-                      <Define></Define>
-                      <Undefine></Undefine>
-                      <IncludePath></IncludePath>
-                    </VariousControls>
-                  </Cads>
-                </FileArmAds>
-              </FileOption>
-            </File>
-            <File>
-              <FileName>sw3516p_lib.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\ic_lib\src\sw3516p_lib.c</FilePath>
-            </File>
-            <File>
-              <FileName>sw3526_lib.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\ic_lib\src\sw3526_lib.c</FilePath>
-              <FileOption>
-                <CommonProperty>
-                  <UseCPPCompiler>2</UseCPPCompiler>
-                  <RVCTCodeConst>0</RVCTCodeConst>
-                  <RVCTZI>0</RVCTZI>
-                  <RVCTOtherData>0</RVCTOtherData>
-                  <ModuleSelection>0</ModuleSelection>
-                  <IncludeInBuild>0</IncludeInBuild>
-                  <AlwaysBuild>2</AlwaysBuild>
-                  <GenerateAssemblyFile>2</GenerateAssemblyFile>
-                  <AssembleAssemblyFile>2</AssembleAssemblyFile>
-                  <PublicsOnly>2</PublicsOnly>
-                  <StopOnExitCode>11</StopOnExitCode>
-                  <CustomArgument></CustomArgument>
-                  <IncludeLibraryModules></IncludeLibraryModules>
-                  <ComprImg>1</ComprImg>
-                </CommonProperty>
-                <FileArmAds>
-                  <Cads>
-                    <interw>2</interw>
-                    <Optim>0</Optim>
-                    <oTime>2</oTime>
-                    <SplitLS>2</SplitLS>
-                    <OneElfS>2</OneElfS>
-                    <Strict>2</Strict>
-                    <EnumInt>2</EnumInt>
-                    <PlainCh>2</PlainCh>
-                    <Ropi>2</Ropi>
-                    <Rwpi>2</Rwpi>
-                    <wLevel>0</wLevel>
-                    <uThumb>2</uThumb>
-                    <uSurpInc>2</uSurpInc>
-                    <uC99>2</uC99>
-                    <uGnu>2</uGnu>
-                    <useXO>2</useXO>
-                    <v6Lang>0</v6Lang>
-                    <v6LangP>0</v6LangP>
-                    <vShortEn>2</vShortEn>
-                    <vShortWch>2</vShortWch>
-                    <v6Lto>2</v6Lto>
-                    <v6WtE>2</v6WtE>
-                    <v6Rtti>2</v6Rtti>
-                    <VariousControls>
-                      <MiscControls></MiscControls>
-                      <Define></Define>
-                      <Undefine></Undefine>
-                      <IncludePath></IncludePath>
-                    </VariousControls>
-                  </Cads>
-                </FileArmAds>
-              </FileOption>
-            </File>
-            <File>
-              <FileName>sw3536_lib.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\ic_lib\src\sw3536_lib.c</FilePath>
-              <FileOption>
-                <CommonProperty>
-                  <UseCPPCompiler>2</UseCPPCompiler>
-                  <RVCTCodeConst>0</RVCTCodeConst>
-                  <RVCTZI>0</RVCTZI>
-                  <RVCTOtherData>0</RVCTOtherData>
-                  <ModuleSelection>0</ModuleSelection>
-                  <IncludeInBuild>0</IncludeInBuild>
-                  <AlwaysBuild>2</AlwaysBuild>
-                  <GenerateAssemblyFile>2</GenerateAssemblyFile>
-                  <AssembleAssemblyFile>2</AssembleAssemblyFile>
-                  <PublicsOnly>2</PublicsOnly>
-                  <StopOnExitCode>11</StopOnExitCode>
-                  <CustomArgument></CustomArgument>
-                  <IncludeLibraryModules></IncludeLibraryModules>
-                  <ComprImg>1</ComprImg>
-                </CommonProperty>
-                <FileArmAds>
-                  <Cads>
-                    <interw>2</interw>
-                    <Optim>0</Optim>
-                    <oTime>2</oTime>
-                    <SplitLS>2</SplitLS>
-                    <OneElfS>2</OneElfS>
-                    <Strict>2</Strict>
-                    <EnumInt>2</EnumInt>
-                    <PlainCh>2</PlainCh>
-                    <Ropi>2</Ropi>
-                    <Rwpi>2</Rwpi>
-                    <wLevel>0</wLevel>
-                    <uThumb>2</uThumb>
-                    <uSurpInc>2</uSurpInc>
-                    <uC99>2</uC99>
-                    <uGnu>2</uGnu>
-                    <useXO>2</useXO>
-                    <v6Lang>0</v6Lang>
-                    <v6LangP>0</v6LangP>
-                    <vShortEn>2</vShortEn>
-                    <vShortWch>2</vShortWch>
-                    <v6Lto>2</v6Lto>
-                    <v6WtE>2</v6WtE>
-                    <v6Rtti>2</v6Rtti>
-                    <VariousControls>
-                      <MiscControls></MiscControls>
-                      <Define></Define>
-                      <Undefine></Undefine>
-                      <IncludePath></IncludePath>
-                    </VariousControls>
-                  </Cads>
-                </FileArmAds>
-              </FileOption>
-            </File>
-            <File>
-              <FileName>sw3566_i2c_lib.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\ic_lib\src\sw3566_i2c_lib.c</FilePath>
-            </File>
-            <File>
-              <FileName>sw3566_lib.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\ic_lib\src\sw3566_lib.c</FilePath>
-            </File>
-            <File>
-              <FileName>sw_net_lib.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\ic_lib\src\sw_net_lib.c</FilePath>
+              <FilePath>..\user\src\i2c_ota_policy.c</FilePath>
             </File>
           </Files>
         </Group>
         <Group>
-          <GroupName>my</GroupName>
+          <GroupName>uvdm</GroupName>
           <Files>
             <File>
-              <FileName>i2c_ota_slave.c</FileName>
+              <FileName>usr_common.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\my\i2c_ota_slave\i2c_ota_slave.c</FilePath>
+              <FilePath>..\uvdm\usr_common.c</FilePath>
             </File>
           </Files>
         </Group>

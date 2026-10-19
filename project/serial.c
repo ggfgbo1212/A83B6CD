@@ -8,8 +8,6 @@
 #include "zr_rcc.h"
 #include "zr_gpio.h"
 #include "zr_uart.h"
-#include "zr_nvic.h"
-#include "device_drive.h" 
 
 /**
  * @brief  Initializes the serial for printf
@@ -23,8 +21,8 @@ void Serail_Init(u32 baudrate)
 {
     /* uart pinmux */
     Rcc_Module_Clk_Enable(GPIO_ID);
-    Gpio_Function_Select(GPIO1, GPIO1_FUNC_SEL_UART_TX); /* tx */
-    Gpio_Function_Select(GPIO2, GPIO2_FUNC_SEL_UART_RX); /* rx */
+    Gpio_Function_Select(GPIO0, FUNCTION_SEL1); /* tx */
+    Gpio_Function_Select(GPIO1, FUNCTION_SEL1); /* rx */
 
     /* clk,reset */
     Rcc_Module_Rst(UART_ID);
@@ -36,7 +34,6 @@ void Serail_Init(u32 baudrate)
     Uart_RX_Enable();
     Rcc_Module_Clk_Disable(GPIO_ID);
 }
-
 
 /**
  * @brief  Printf function implement
@@ -59,5 +56,3 @@ int fputc(int ch, FILE* f)
     Uart_TX_Byte((uint8_t)ch);
     return ch;
 }
-
-

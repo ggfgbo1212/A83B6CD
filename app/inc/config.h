@@ -24,6 +24,8 @@ typedef struct
     uint16_t vid : 16;                                          //!< Vendor ID
     uint16_t pid : 16;                                          //!< PID
     uint16_t bcdDevice : 16;                                    //!< bcd device;
+    
+    uint16_t abnRelieveWaitTime:16;                             //!< abnormal max wait relive time, unit: ms                           
                         
     uint8_t pdMaxPower : 8;                                     //!< pd max power, unit: W
     uint8_t tfcpMaxPower : 8;                                   //!< tfcp max power, unit : W
@@ -89,6 +91,7 @@ typedef struct
     bool isPdGatingVoocEnabled : 1;                             //!< whether to suppress vooc while PD is working
     bool isPdGatingScpEnabled : 1;                              //!< whether to suppress SCP while PD is working
  
+    bool isVoocPrior : 1;                                       //!< whether is vooc prior than ufcs
     bool isVoocCableStricMode : 1;                              //!< whether to enable VOOC Cable strict mode
     bool isEmarkEnabled : 1;                                    //!< whether to read emark
     bool isPdEnabled : 1;                                       //!< whether to enable PD
@@ -105,8 +108,128 @@ typedef struct
     
     uint8_t pdVersionMinor:4;                                   //!< the version of pd revision
     uint8_t typecConnectTime;                                   //!< the connect time of typec,this time just typec time, really vbus_on time will > this, 1ms/step
+    
+    bool isUfcsCertEnabled: 1;                                  //!< whether to open ufcs certification mode, when it is true, dp < 1.05v apple->samsung; 
+
+    pd_vdm_version_e pdVdmVer : 1;                              //!< the version of pd vdm
+    
+    uint8_t ufcsDevTemp;                                        //!< the device temperatrue of ufcs src_info message, unit: degree
+    uint8_t ufcsUsbTemp;                                        //!< the usb port temperatrue of ufcs src_info message, unit: degree
+
+    bool isIgnoreEprCable: 1;                                   //!< whether ignore epr cable,true,no care cable,send 140w epr src cap
+	
+	bool isPdCertWithApple: 1;                                  //!< whether pd cert with apple
+	
+	uint16_t vPpsShutDownInMv;                                //!< vppsshutdown threshold,1mv/step
+	uint8_t pdFirmwareVer;                                    //!< the fw version of pd src cap extended 
+	uint8_t pdHardwareVer;                                    //!< the hw version of pd src cap extended 
 } config_data_t;
 
+/**
+ * THE DEFAULT CONFIG as below
+
+    config->portMode = SINGLE_C_MODE;
+    // power
+    config->fixVoltageOffset = FIX_VOLTAGE_OFFSET_200MV;
+    config->fixCurrentOffset = FIX_CURRENT_OFFSET_300MA;
+    config->cableCompensationValue = CABLE_COMPENSAVE_VALUE_100MOHM;
+    config->p1CurrentLimit = PORT_CURR_LIMIT_3P0A;
+    config->p2CurrentLimit = PORT_CURR_LIMIT_3P0A;
+    config->isCableCompensaved = true;
+    config->isAbnLpsEnabled = false;
+
+    // dpdm
+    config->dpdmFixPower = 60;
+    config->isAppleEnabled = true;
+    config->isSamsungEnabled = true;
+    config->isQc2p0Enabled = true;
+    config->isQc3p0Enabled = true;
+    config->isQc3plusEnabled = true;
+    config->isPeEnabled = true;
+    config->isSfcpEnabled = false;
+    config->qc2p0MaxVoltage = QC2P0_MAX_VOL_20V;
+    config->qc3p0MaxVoltage = QC3P0_MAX_VOL_20V;
+    config->peMaxVoltage = PE_MAX_VOL_12V;
+    config->qc3MaxPower = QC3_MAX_POWER_27W;
+    config->afcMaxVoltage = AFC_MAX_VOL_12V;
+    config->sfcpMaxVoltage = SFCP_MAX_VOL_12V;
+    config->isPdCertWithApple = false;
+
+    // tfcp
+    config->isTfcpEnabled = false;
+    config->tfcpMaxPower = 65;
+
+    // scp
+    config->isFcpEnabled = true;
+    config->isHvScpEnabled = true;
+    config->isLvScpEnabled = true;
+    config->isAfcEnabled = true;
+    config->scpMaxCurrent = 40;
+    config->scpMaxPower = 40;
+    config->scpMaxVoltage = 120;
+    config->scpAdapterType = 0x0A;
+    config->fcpMaxVoltage = FCP_MAX_VOL_9V;
+    config->isPdGatingScpEnabled = false;
+
+    // vooc
+    config->isVooc1p0Enabled = true;
+    config->isVooc4p0Enabled = true;
+    config->isSuperVooc2p0Enabled = true;
+    config->voocMaxPower = 30;
+    config->superVoocMaxPower = 65;
+    config->isPdGatingVoocEnabled = false;
+    config->voocPathImpedanceCommonCableTyp150 = 150;
+    config->voocPathImpedanceCommonCableTyp180 = 180;
+    config->voocPathImpedanceCommonCableTyp250 = 250;
+    config->voocPathImpedanceGenuineCableTyp150 = 150;
+    config->voocPathImpedanceGenuineCableTyp180 = 180;
+    config->voocPathImpedanceGenuineCableTyp250 = 250;
+    config->isVoocCableStricMode = false;
+
+    // ufcs
+    config->isUfcsEnabled = true;
+    config->ufcsSrcCap = (const uint8_t*)ufcs100wOutputCap;
+    config->ufcsSrcCapNum = 3;
+    config->isUfcsCertEnabled = false;
+    config->ufcsDevTemp = 25;
+    config->ufcsUsbTemp = 25;
+
+    // typec
+    config->isTypecCertEnabled = false;
+    config->typecCcTerm = RP_3A;
+    config->isTypecVconnEnabled = true;
+    config->isVconnLowPowerModeEnabled = false;
+    config->typecConnectTime = 130;
+    config->isPortCNoLoad = true;
+
+    // pd
+    config->pdSrcCap = pd140wCap;        // pd src cap dtat pointer
+    config->xid = 0;
+    config->vid = 0x2FE6;
+    config->pid = 0;
+    config->bcdDevice = 0;
+    config->pdMaxPower = 140;           // 140w power
+    config->sprPdoNumber = 6;           // spr pdo num
+    config->sprFixPdoNumber = 5;        // spr fix pdo num
+    config->eprPdoNumber = 2;           // epr pdo num,it is eprFixPdoNumber add avs pdo num
+    config->eprFixPdoNumber = 1;        // epr fix pdo num
+    config->isVconnSwapEnabled = false;
+    config->isResponseDiscoveryId = false;
+
+    config->isPdEnabled = true;
+    config->isPdCertEnabled = false;
+    config->pdVersionMinor = 6;        // for pps 5v min vol cert,must set 8 or above
+    config->isEmarkEnabled = true;
+    config->isPdo5v2aEnabled = false;
+    config->isPdAlertEnabled = true;
+    config->isInvalidPpsEnabled = true;
+    config->pdVdmVer = VERSION2_0;
+    config->isIgnoreEprCable = false;
+    config->vPpsShutDownInMv = 3100;
+    config->pdFirmwareVer = 0x1;
+    config->pdHardwareVer = 0x1;
+
+*/
 
 #ifdef __cplusplus
 }

@@ -16,6 +16,7 @@ extern "C" {
 #define PDO_TYPE_FIXED      (0U)
 #define PDO_TYPE_PPS        (12U)
 #define PDO_TYPE_AVS        (13U)
+#define PDO_TYPE_SPR_AVS    (14U)
 #define PDO_TYPE(x) (x << 28)
 
 #define PDO_FIXED_NO_PEAK_CURRENT                       (0U)
@@ -76,6 +77,13 @@ extern "C" {
 	PDO_FIXED_PEAK_CURRENT_MODE3, support peak current mode3
  */ 
 #define PDO_FIXED_OTHERS(mv, ma, peakCurrent)          (PDO_FIXED_VOLT(mv) | PDO_FIXED_CURR(ma) | PDO_FIXED_PEAK_CURRENT_MODE(peakCurrent))
+
+/** 
+ * define spr avs power object
+ * @param ma20v max current for 15-20v range
+ * @param ma15v max current for 9-15v range
+ */ 
+#define PDO_SPR_AVS(ma20v, ma15v)          (PDO_FIXED_CURR(ma20v) | (PDO_FIXED_CURR(ma15v) << 10) | PDO_TYPE(PDO_TYPE_SPR_AVS))
 
 /** 
  * define SPR augmented power object 

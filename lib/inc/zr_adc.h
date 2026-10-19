@@ -117,6 +117,18 @@ uint16_t Adc_Iout_Raw_Get(u8 portNum);
 uint16_t Adc_Die_Get(void);
 
 /**
+ * @brief  Adc die channel force close enable or not 
+ * @param isEnable, bool true is to enable force close otherwise not
+ */
+void Adc_Die_Force_Close(bool isEnable);
+
+/**
+ * @brief  Adc die channel is force closed or not
+ * @param true die channel is force closed otherwise not
+ */
+bool Adc_Die_Is_Force_Closed(void);
+
+/**
  * @brief  Get vin voltage, it is disabled in default, use Adc_Vin_Enable/Adc_Vin_Disable to control
  * @return vin voltage, mV
  */
@@ -187,6 +199,8 @@ typedef enum
     ADC_CHL_1,            //!< adc channel 1
     ADC_CHL_2,            //!< adc channel 2
     ADC_CHL_3,            //!< adc channel 3
+    ADC_VOUT,             //!< adc vout channel
+    ADC_IOUT2,            //!< adc iout2 channel    
 } adc_channel_e;
 
 /// adc comparator operator

@@ -61,7 +61,7 @@ void Uart_Init(const uart_config_t* cfg);
 void Uart_Deinit(void);
 
 /**
- * @brief  UART baudrate configure
+ * @brief  UART baudrate configure for NON-SLEEP or Normal sleep
  * @param  baudrate: UART baudrate
  *         This parameter can be:
  *         115200
@@ -69,6 +69,18 @@ void Uart_Deinit(void);
  *         ....
  */
 void Uart_Baudrate_Cfg(u32 baudrate);
+
+/**
+ * @brief  UART baudrate configure for deep sleep
+ * it shall change clock source when go to deep sleep when uart as the wakeup source, and shall turn back to clock source
+ * too when in normal run or normal sleep
+ * @param  baudrate: UART baudrate
+ *         This parameter can be:
+ *         115200
+ *         38400
+ *         ....
+ */
+void Uart_Baudrate_Cfg_On_Deep_Sleep(u32 baudrate);
 
 /**
  * @brief  UART mode select

@@ -18,28 +18,28 @@ extern "C" {
  */
 typedef enum
 {
-    FC_None = 0,         //!< 0  none
-    FC_QC2,              //!< 1  Qc2
-    FC_QC3,              //!< 2  Qc3
-    FC_QC3P,             //!< 3  Qc3+
-    FC_SFCP,             //!< 4  SFCP
-    FC_AFC,              //!< 5  AFC
-    FC_FCP,              //!< 6  FCP
-    FC_SCP,              //!< 7  SCP
-    FC_VOOC1P0,          //!< 8  VOOC1.0
-    FC_VOOC4P0,          //!< 9  VOOC4.0
-    FC_SVOOC2P0,         //!< 10 SupperVooc2.0
-    FC_TFCP,             //!< 11 TFCP
-    FC_UFCS,             //!< 12 UFCS
-    FC_PE1,              //!< 13 PE1.0
-    FC_PE2,              //!< 14 PE2.0
-    FC_PD_Fix5V,         //!< 15 PD fix 5v
-    FC_PD_FixHV,         //!< 16 PD fix high voltage
-    FC_PD_PPS,           //!< 17 PD PPS
-    FC_PD_EPR_HV,        //!< 18 PD EPR high voltage
-    FC_PD_AVS,           //!< 19 PD AVS
+    FC_None = 0,          //!< 0  none
+    FC_QC2,               //!< 1  Qc2
+    FC_QC3,               //!< 2  Qc3
+    FC_QC3P,              //!< 3  Qc3+
+    FC_SFCP,              //!< 4  SFCP
+    FC_AFC,               //!< 5  AFC
+    FC_FCP,               //!< 6  FCP
+    FC_SCP,               //!< 7  SCP
+    FC_VOOC1P0,           //!< 8  VOOC1.0
+    FC_VOOC4P0,           //!< 9  VOOC4.0
+    FC_SVOOC2P0,          //!< 10 SupperVooc2.0
+    FC_TFCP,              //!< 11 TFCP
+    FC_UFCS,              //!< 12 UFCS
+    FC_PE1,               //!< 13 PE1.0
+    FC_PE2,               //!< 14 PE2.0
+    FC_PD_Fix5V,          //!< 15 PD fix 5v
+    FC_PD_FixHV,          //!< 16 PD fix high voltage
+    FC_PD_SPR_AVS,        //!< 17 PD SPR AVS
+    FC_PD_PPS,            //!< 18 PD PPS
+    FC_PD_EPR_HV,         //!< 19 PD EPR high voltage
+    FC_PD_AVS,            //!< 20 PD AVS
 } fast_charge_protocol_e;
-
 
 /**
  * Typec cc term definition
@@ -52,6 +52,15 @@ typedef enum
     RP_1_5A = 2,
     RP_DEFAULT_USB = 3,
 } typec_cc_term_set_e;
+
+/**
+ * pd vdm version definition
+ */
+typedef enum
+{
+    VERSION2_0 = 0,
+    VERSION2_1 = 1,
+} pd_vdm_version_e;
 
 /**
  * Line resistance compensave type
@@ -190,81 +199,101 @@ typedef enum
  */
 typedef enum
 {
-    NOLOAD_TH_3MA,                  //!< 3mA
-    NOLOAD_TH_6MA,                  //!< 6mA
-    NOLOAD_TH_9MA,                  //!< 9mA
-    NOLOAD_TH_12MA,                 //!< 12mA
-    NOLOAD_TH_15MA,                 //!< 15mA
-    NOLOAD_TH_18MA,                 //!< 18mA
-    NOLOAD_TH_21MA,                 //!< 21mA
-    NOLOAD_TH_24MA,                 //!< 24mA
-    NOLOAD_TH_27MA,                 //!< 27mA
-    NOLOAD_TH_30MA,                 //!< 30mA
-    NOLOAD_TH_33MA,                 //!< 33mA
-    NOLOAD_TH_36MA,                 //!< 36mA
-    NOLOAD_TH_39MA,                 //!< 39mA
-    NOLOAD_TH_42MA,                 //!< 42mA
-    NOLOAD_TH_45MA,                 //!< 45mA
-    NOLOAD_TH_48MA,                 //!< 48mA
+    NOLOAD_TH_3MA,         //!< 3mA
+    NOLOAD_TH_6MA,         //!< 6mA
+    NOLOAD_TH_9MA,         //!< 9mA
+    NOLOAD_TH_12MA,        //!< 12mA
+    NOLOAD_TH_15MA,        //!< 15mA
+    NOLOAD_TH_18MA,        //!< 18mA
+    NOLOAD_TH_21MA,        //!< 21mA
+    NOLOAD_TH_24MA,        //!< 24mA
+    NOLOAD_TH_27MA,        //!< 27mA
+    NOLOAD_TH_30MA,        //!< 30mA
+    NOLOAD_TH_33MA,        //!< 33mA
+    NOLOAD_TH_36MA,        //!< 36mA
+    NOLOAD_TH_39MA,        //!< 39mA
+    NOLOAD_TH_42MA,        //!< 42mA
+    NOLOAD_TH_45MA,        //!< 45mA
+    NOLOAD_TH_48MA,        //!< 48mA
 } noload_threshold_e;
 
-/** 
- * Port current limit 
+/**
+ * Port current limit
  */
 typedef enum
 {
-    PORT_CURR_LIMIT_1P5A = 0,                   //!< 1.5A current limit
-    PORT_CURR_LIMIT_2P0A,                       //!< 2.0A current limit
-    PORT_CURR_LIMIT_2P4A,                       //!< 2.4A current limit
-    PORT_CURR_LIMIT_3P0A                        //!< 3.0A current limit
+    PORT_CURR_LIMIT_1P5A = 0,        //!< 1.5A current limit
+    PORT_CURR_LIMIT_2P0A,            //!< 2.0A current limit
+    PORT_CURR_LIMIT_2P4A,            //!< 2.4A current limit
+    PORT_CURR_LIMIT_3P0A             //!< 3.0A current limit
 } port_current_limit_e;
 
 #define PCL_NUM (PORT_CURR_LIMIT_3P0A + 1)
 
-/** 
- * Port working mode 
+/**
+ * Port working mode
  */
 typedef enum
 {
-    SINGLE_A_MODE = 0,                        //!< single A mode
-    SINGLE_C_MODE,                            //!< single C mode
-    DUO_AA_MODE,                              //!< A + A mode
-    DUO_CA_MODE,                              //!< C + A mode
-    DUO_CC_MODE                               //!< C + C mode
+    SINGLE_A_MODE = 0,        //!< single A mode
+    SINGLE_C_MODE,            //!< single C mode
+    DUO_AA_MODE,              //!< A + A mode
+    DUO_CA_MODE,              //!< C + A mode
+    DUO_CC_MODE               //!< C + C mode
 } port_mode_e;
 
-
-/** 
+/**
  * hsmos resistance
  */
 typedef enum
 {
-    MOS_RES_2MOHM,                          //!< 2 mOhm
-    MOS_RES_3MOHM,                          //!< 3 mOhm
-    MOS_RES_4MOHM,                          //!< 4 mOhm
-    MOS_RES_5MOHM,                          //!< 5 mOhm
-    MOS_RES_6MOHM,                          //!< 6 mOhm
-    MOS_RES_8MOHM,                          //!< 8 mOhm
-    MOS_RES_10MOHM,                         //!< 10 mOhm
-    MOS_RES_13MOHM,                         //!< 13 mOhm
+    MOS_RES_2MOHM,         //!< 2 mOhm
+    MOS_RES_3MOHM,         //!< 3 mOhm
+    MOS_RES_4MOHM,         //!< 4 mOhm
+    MOS_RES_5MOHM,         //!< 5 mOhm
+    MOS_RES_6MOHM,         //!< 6 mOhm
+    MOS_RES_8MOHM,         //!< 8 mOhm
+    MOS_RES_10MOHM,        //!< 10 mOhm
+    MOS_RES_13MOHM,        //!< 13 mOhm
 } mos_res_e;
 
-
-/** 
+/**
  * hsmos resistance
  */
 typedef enum
 {
-    VR_OCP_6A,                          //!< 6 A
-    VR_OCP_8A,                          //!< 8 A
-    VR_OCP_10A,                         //!< 10 A
-    VR_OCP_12A,                         //!< 12 A
-    VR_OCP_15A,                         //!< 15 A
-    VR_OCP_17A,                         //!< 17 A
-    VR_OCP_19A,                         //!< 19 A
-    VR_OCP_21A,                         //!< 21 A
+    VR_OCP_6A,         //!< 6 A
+    VR_OCP_8A,         //!< 8 A
+    VR_OCP_10A,        //!< 10 A
+    VR_OCP_12A,        //!< 12 A
+    VR_OCP_15A,        //!< 15 A
+    VR_OCP_17A,        //!< 17 A
+    VR_OCP_19A,        //!< 19 A
+    VR_OCP_21A,        //!< 21 A
 } vr_ocp_e;
 
+/**
+ * Vd detect debounce, unit : 20ns/per
+ */
+typedef enum
+{
+    VD_DEBOUNCE_0,         // DON'T USED
+    VD_DEBOUNCE_1,         // 1 per
+    VD_DEBOUNCE_2,         // 2 per
+    VD_DEBOUNCE_3,         // 3 per
+    VD_DEBOUNCE_4,         // 4 per
+    VD_DEBOUNCE_5,         // 5 per
+    VD_DEBOUNCE_6,         // 6 per
+    VD_DEBOUNCE_7,         // 7 per
+    VD_DEBOUNCE_8,         // 8 per
+    VD_DEBOUNCE_9,         // 9 per
+    VD_DEBOUNCE_10,        // 10 per
+    VD_DEBOUNCE_11,        // 11 per
+    VD_DEBOUNCE_12,        // 12 per
+    VD_DEBOUNCE_13,        // 13 per
+    VD_DEBOUNCE_14,        // 14 per
+    VD_DEBOUNCE_15,        // 15 per
+} vd_debounce_e;
 
 /**
  * Vd detect threshold
@@ -298,17 +327,83 @@ typedef enum
     VD_DETECT_220V = 1,        //!< vd detect result is 220V
 } vd_result_e;
 
+typedef enum
+{
+    HSMOS_PD_TH8 = 0x00,        //!< hsmos pulldown strength threshold 8
+    HSMOS_PD_TH7 = 0x01,        //!< hsmos pulldown strength threshold 7
+    HSMOS_PD_TH6 = 0x02,        //!< hsmos pulldown strength threshold 6
+    HSMOS_PD_TH5 = 0x03,        //!< hsmos pulldown strength threshold 5
+    HSMOS_PD_TH4 = 0x04,        //!< hsmos pulldown strength threshold 4
+    HSMOS_PD_TH3 = 0x05,        //!< hsmos pulldown strength threshold 3
+    HSMOS_PD_TH2 = 0x06,        //!< hsmos pulldown strength threshold 2
+    HSMOS_PD_TH1 = 0x07,        //!< hsmos pulldown strength threshold 1
+} hsmos_pulldown_strength_e;
+
+typedef enum
+{
+    HSMOS_PU_TH8 = 0x00,        //!< hsmos pullup strength threshold 8
+    HSMOS_PU_TH7 = 0x01,        //!< hsmos pullup strength threshold 7
+    HSMOS_PU_TH6 = 0x02,        //!< hsmos pullup strength threshold 6
+    HSMOS_PU_TH5 = 0x03,        //!< hsmos pullup strength threshold 5
+    HSMOS_PU_TH4 = 0x04,        //!< hsmos pullup strength threshold 4
+    HSMOS_PU_TH3 = 0x05,        //!< hsmos pullup strength threshold 3
+    HSMOS_PU_TH2 = 0x06,        //!< hsmos pullup strength threshold 2
+    HSMOS_PU_TH1 = 0x07,        //!< hsmos pullup strength threshold 1
+} hsmos_pullup_strength_e;
 
 /**
  * buck config type
  */
 typedef enum
 {
-    BUCK_CFG_181KHZ_10UH,       //!< 181KHz 10uH
-    BUCK_CFG_333KHZ_4UH7,       //!< 333KHz 4.7uH
-    BUCK_CFG_125KHZ_22UH,       //!< 125KHz 22uH
+    BUCK_CFG_181KHZ_10UH,        //!< 181KHz 10uH
+    BUCK_CFG_333KHZ_4UH7,        //!< 333KHz 4.7uH
+    BUCK_CFG_125KHZ_22UH,        //!< 125KHz 22uH
 } buck_cfg_type_e;
 
+/**
+ * Current slew type
+ */
+typedef enum
+{
+    CURRENT_SLEW_8US_25MA,          //!< 8us 25mA
+    CURRENT_SLEW_512US_25MA,        //!< 512us 25mA
+    CURRENT_SLEW_256US_25MA,        //!< 256us 25mA
+    CURRENT_SLEW_192US_25MA,        //!< 192us 25mA
+} current_slew_e;
+
+/**
+ * Voltage slew type
+ */
+typedef enum
+{
+    VOLTAGE_SLEW_32US_10MV,        //!< 32us 10mV
+    VOLTAGE_SLEW_48US_10MV,        //!< 48us 10mV
+    VOLTAGE_SLEW_64US_10MV,        //!< 64us 10mV
+    VOLTAGE_SLEW_80US_10MV,        //!< 80us 10mV
+} voltage_slew_e;
+
+/**
+ * constant temperature control loop slew
+ */
+typedef enum
+{
+    CONST_TEMP_NULL,            //!< disable
+    CONST_TEMP_33DEG_V,         //!< 33deg/v
+    CONST_TEMP_15DEG_V,         //!< 15deg/v
+    CONST_TEMP_11DEG_V,         //!< 11deg/v
+} constant_temp_slew_e;
+
+/**
+ * constant temperature control loop start
+ */
+typedef enum
+{
+    CONST_TEMP_START_100_DEG,        //!< start 100 deg
+    CONST_TEMP_START_110_DEG,        //!< start 110 deg
+    CONST_TEMP_START_120_DEG,        //!< start 120 deg
+    CONST_TEMP_START_130_DEG,        //!< start 130 deg
+} constant_temp_start_e;
 
 #ifdef __cplusplus
 }

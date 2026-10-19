@@ -22,6 +22,8 @@ extern "C" {
 #define FCLK      RC2_CLK/2
 #define AHBCLK    FCLK
 #define APBCLK    FCLK/2
+#define DEEP_SLEEP_CLK  125000
+#define APB_DEEP_SLEEP_CLK  DEEP_SLEEP_CLK/2
 
 #ifdef __cplusplus
 }
