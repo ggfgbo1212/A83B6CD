@@ -542,13 +542,13 @@ void Ufcs_Clear_Rx_Line_Reset_Flag(void);
  *        bit4  : DIE OTP Release
  *        bit5  : VOUT SLOW OVP Release
  *        bit6  : VOUT FAST OVP  Release
- *        bit7  ï¼šVIN UVLO Release
- *        bit8  ï¼šVIN OVP Release
- *        bit9  ï¼šDIE WARN Release
- *        bit10 ï¼šDM2 Weak Short Release
- *        bit11 ï¼šDP2 Weak Short Release
- *        bit12 ï¼šDM1 Weak Short Release
- *        bit13 ï¼šDP1 Weak Short Release
+ *        bit7  £ºVIN UVLO Release
+ *        bit8  £ºVIN OVP Release
+ *        bit9  £ºDIE WARN Release
+ *        bit10 £ºDM2 Weak Short Release
+ *        bit11 £ºDP2 Weak Short Release
+ *        bit12 £ºDM1 Weak Short Release
+ *        bit13 £ºDP1 Weak Short Release
  *        bit14~bit31  reserved
  */
 typedef void (*Abnormal_Hook)(u32 pending);

@@ -1,70 +1,39 @@
-/****************************************************************************
- * @copyright Copyright(C) 2020-2026 Ismartware Limited. All rights reserved.
- * @file i2c_ota_policy.h
- * @brief I2C slave OTA handler using the vacant register 0xAA.
- *
- * Host protocol (two separate transactions):
- *   T1 write command : START + addr(W) + 0xAA + 01 C0 00 2B 08 + STOP
- *   T2 read ACK      : START + addr(W) + 0xAA + Sr + addr(R) + 7 bytes + STOP
- *   ACK frame        : AA 03 00 FF FF <crcLo> <crcHi>
- *                      crc = CRC-16, poly 0x8005, init 0x0000, no reflection
- *   After the ACK is clocked out the MCU resets so the vendor bootloader runs.
- *
- * Adapted from the working vendor reference project (my/i2c_ota_slave) - it
- * runs a standalone polling-mode I2C slave; this port folds the same sequence
- * into the existing interrupt-driven I2CS_Handler() so that register access
- * for every address other than 0xAA keeps its original behaviour byte for byte.
- *
- * The hooks below deliberately do NOT touch I2C/GPIO/ADC setup: pin muxing,
- * pull-ups, slave address and FIFO trigger levels all stay exactly as
- * I2C_Drive_Init() and ADC_Config_Init() configured them.
- *
- * IMPORTANT: in the RX branch of I2CS_Handler(), I2c_Ota_On_Rx_Byte() must be
- * called WITHOUT clearing I2C_S_RX_DATA_PENGING - that clear writes the whole
- * S_STATUS register and would wipe the frame's register-address / byte-length
- * fields while the frame is still being received.
- ****************************************************************************/
+/*
+***************************************************************************
+* Copyright (C) 2022-2026 Ismartware Limited. All rights reserved.
+* File name: i2c_ota_policy.h
+* Description: I2C从机OTA功能接口，通过寄存器0xAA触发升级
+* Version: V1.0
+* Date:
+* History:
+***************************************************************************
+*/
+// 主机协议（两笔独立事务）：
+// 1. 写命令：START + 地址(写) + 0xAA + 01 C0 00 2B 08 + STOP
+// 2. 读应答：START + 地址(写) + 0xAA + Sr + 地址(读) + 7字节 + STOP
+// 应答内容：AA 03 00 FF FF 3D 8C（CRC-16，多项式0x8005，初值0x0000，不反转）
+// 应答发送完成后MCU复位，跳转至厂商Bootloader
+//
+// 注意：I2CS_Handler()的RX分支调用I2c_Ota_On_Rx_Byte()时，不能清除
+//       I2C_S_RX_DATA_PENGING，否则会覆盖S_STATUS中的帧地址和长度信息。
 #ifndef I2C_OTA_POLICY_H
 #define I2C_OTA_POLICY_H
 
 #include "system.h"
 
-/* I2C register address reserved for the OTA channel (vacant in this project). */
+// OTA专用寄存器地址（本工程空闲）
 #define I2C_OTA_REG_ADDR    (0xAAU)
 
-/**
- * @brief  Call from the RX branch of I2CS_Handler() when the register address
- *         is I2C_OTA_REG_ADDR (do NOT clear the RX pending flag).
- *         Parks the RX_DATA interrupt so the payload stays in the RX FIFO until
- *         the STOP, drops any FINISH flag left by earlier transactions (write
- *         transactions never clear it - it would fire as soon as the FINISH
- *         interrupt is enabled and cut the frame short), and enables the
- *         FINISH interrupt so the STOP event becomes visible.
- */
+// 0xAA命令帧收到首字节时调用：挂起RX中断，等待STOP（不能清除RX挂起标志）
 void I2c_Ota_On_Rx_Byte(void);
 
-/**
- * @brief  Call from I2CS_Handler() on every entry. At the command frame's STOP
- *         it checks the payload against I2c_Slave_Get_RX_Byte_Length() and the
- *         fixed 5-byte command, pre-loads the 7-byte ACK into the TX FIFO,
- *         then releases the RX hold. Safe to call unconditionally - it returns
- *         immediately unless an OTA frame is open AND FINISH is set.
- */
+// STOP中断中调用：校验5字节命令，匹配则预装载7字节应答；无OTA帧时直接返回
 void I2c_Ota_On_Finish(void);
 
-/**
- * @brief  Call from the TX branch of I2CS_Handler() when the register address is
- *         I2C_OTA_REG_ADDR. The ACK is already in the TX FIFO (pre-loaded at
- *         the command frame's STOP); this only arms the deferred reset that
- *         I2c_Ota_Policy_Run() executes from the main loop.
- */
+// 主机开始读取应答时调用：标记复位，由主循环执行
 void I2c_Ota_On_Tx_Request(void);
 
-/**
- * @brief  Call from the main loop. Once the ACK has been served, waits for the
- *         master to clock it out and then resets the MCU so the vendor
- *         bootloader takes over. Never returns when the reset is armed.
- */
+// 主循环中调用：等待应答发送完成后复位，进入Bootloader
 void I2c_Ota_Policy_Run(void);
 
 #endif

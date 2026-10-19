@@ -68,5 +68,7 @@
     "anker_unvdm_uart_policy.h": "c",
     "usr_common.h": "c",
     "zr_atm.h": "c"
-  }
+  },
+  "files.encoding": "gbk",
+  "files.autoGuessEncoding": false
 }
