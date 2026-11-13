@@ -15,6 +15,7 @@
 #include "zr_abn.h"
 
 #include "iic_slave_policy.h"
+#include "source_policy.h"
 #include "slave_policy_drive.h"
 #include "i2c_ota_policy.h"
 #include "zr_btm.h"
@@ -45,7 +46,7 @@ u8 A_NoLoad_Start_Flag = 0;
 extern u8 port1NoLoadCur;
 extern u8 port2NoLoadCur;
 
-extern u8 sceneConversionTime;
+extern u8 sceneConversionTime; 
 
 extern port_mode_e cur_port_mode;
 
@@ -306,6 +307,11 @@ extern u16 pd_request_cur;
 
 static void User_Pd_Request_Info_Hook(u8 objIndex, u16 volInMv, u16 currInMa)
 {
+		//记录最近一次Request(位置/电压)，供PPS大跨步断充判据使用
+		Source_Patch_Data.reqObjIndex = objIndex;
+		Source_Patch_Data.reqVolMv = volInMv;
+		Source_Patch_Data.reqSeq++;
+	
 		if(pd_request_vol != volInMv || pd_request_cur != currInMa)
 		{
 				pd_request_vol = volInMv;
@@ -324,6 +330,9 @@ int main(void)
 		//从机初始化
 		Slave_Config_Init();
 
+		// Serail_Init(115200);
+		// printf("main init\r\n");
+
 	Typec_Init_Hook_Func(User_Typec_Attach_Hook, User_Typec_Detach_Hook);
 	Pd_Init_Hook_Func(User_Pd_Request_Info_Hook, User_Pd_Policy_Hook);
 #if defined(A_A_NOLOAD_TRIGGER)
@@ -341,7 +350,7 @@ int main(void)
 		//0x17-bit3-0不驱动端口CC
 		Port_Force_Disconnect(0x00);//Port1
 		Port_Force_Disconnect(0x01);//Port2	
-		
+
     while (1)
     {
         // the following sequence shall NOT change
@@ -357,7 +366,7 @@ int main(void)
 										gNoLoadCount = 0;
 										gNoLoadSpecHandle = false;
 										Stop_Noload_Timer();
-										printf("stop no load checking\n");
+										// printf("stop no load checking\n");
 								}							
 						}
 				#endif
@@ -571,7 +580,3 @@ static void Stop_Noload_Timer(void)
 }
 
 #endif
-
-
-
-

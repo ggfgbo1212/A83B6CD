@@ -19,6 +19,7 @@
  */
 void Serail_Init(u32 baudrate)
 {
+#if 1
     /* uart pinmux */
     Rcc_Module_Clk_Enable(GPIO_ID);
     Gpio_Function_Select(GPIO0, FUNCTION_SEL1); /* tx */
@@ -33,6 +34,23 @@ void Serail_Init(u32 baudrate)
     Uart_TX_Enable();
     Uart_RX_Enable();
     Rcc_Module_Clk_Disable(GPIO_ID);
+#else
+    /* uart pinmux */
+    Rcc_Module_Clk_Enable(GPIO_ID);
+    Gpio_Function_Select(GPIO8, GPIO8_FUNC_SEL_UART_TX); /* tx: DP1 (GPIO8) */
+    /* rx is not routed: GPIO0/GPIO1 are used by the I2C slave */
+
+    /* clk,reset */
+    Rcc_Module_Rst(UART_ID);
+    Rcc_Module_Clk_Enable(UART_ID);
+    Rcc_Module_Rst_Release(UART_ID);
+
+    Uart_Baudrate_Cfg(baudrate);
+    Uart_TX_Enable();
+    Uart_RX_Enable();
+    /* keep GPIO clock enabled: GPIO2 is used as the runtime interrupt output */
+    /* Rcc_Module_Clk_Disable(GPIO_ID); */
+#endif
 }
 
 /**

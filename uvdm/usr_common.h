@@ -34,6 +34,8 @@ typedef struct
 
 bool User_Pd_Policy_Hook(void);
 
+void User_Pd_Policy_Get_Sink_Cap_Extended_Run(void);
+
 void Usr_Uart_Init(u32 baudrate);
 
 void UnVdm_Com_Policy(void);

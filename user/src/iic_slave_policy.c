@@ -16,6 +16,7 @@
 #include "iic_slave_policy.h"
 #include "iic_slave_reg.h"
 #include "slave_policy_drive.h"
+#include <stdio.h>
 
 // 常用变量定义
 #define COMMAND_VARIABLE
@@ -28,6 +29,10 @@ u8 reg_new_data[0x100];
 // 0x8F
 u8 reg_0x8F_data[8];
 u8 reg_0x90_data[8];
+
+// 0x99-0x9E Sink Cap Extended 功能相关变量
+u8 sendComandTime = 0x01;      // 0x9D: 发送前延时, 单位 10ms
+u8 getSinkExtendedStep = 0; // 0x9E bit7-4: 执行状态码
 
 u8 sysBuckClk = 11;
 u8 sysSleep = 0;
@@ -444,10 +449,10 @@ void Reg_Init(void)
 	abn_config_t abnCfg = {0};
 	Abn_Get_Config(&abnCfg);
 
-	reg_new_data[0x00] = 0x01;
+	reg_new_data[0x00] = 0x06;
 	reg_new_data[0x01] = cur_port_mode << 5;
 	reg_new_data[0x02] = PD_DEFAULT_MAX_POWER; // 默认功率100W
-	reg_new_data[0x03] = ((is_pps0_enable << 7) | (is_pps1_enable << 6) | (is_pps2_enable << 5));
+	reg_new_data[0x03] = ((is_pps0_enable << 7) | (is_pps1_enable << 6) | (is_pps2_enable << 5) | (is_spr_avs_enable << 4));	//bit4: SPR AVS使能
 	reg_new_data[0x04] = (is_avs0_enable << 0);													// 0x12;
 	reg_new_data[0x05] = ((fix5v_cur / 10) & 0x0300) >> 8;										// 0x0B;
 	reg_new_data[0x06] = (fix5v_cur / 10) & 0x00FF;												// 0xB8;
@@ -620,6 +625,15 @@ void Reg_Init(void)
 	reg_new_data[0x97] = spr_avs_9v15v_max_cur;
 	
 	reg_new_data[0x98] = spr_avs_15v20v_max_cur;
+
+	// 0x99-0x9E: Sink Cap Extended 相关寄存器
+	reg_new_data[0x99] = 0x00;
+	reg_new_data[0x9A] = 0x00;
+	reg_new_data[0x9B] = 0x00;
+	reg_new_data[0x9C] = 0x00;
+	reg_new_data[0x9D] = 0x01;
+	reg_new_data[0x9E] = 0x02;
+	reg_new_data[0x9F] = 0x00;
 }
 
 // 执行寄存器功能
@@ -1319,6 +1333,15 @@ void Execute_Register_Function(u8 regAddr, u8 regData)
 	case 0x98:
 		spr_avs_15v20v_max_cur = regData;
 		break;
+	case 0x9D:
+		// 发送前延时, 单位 10ms, 0=不延时
+		sendComandTime = regData;
+		break;
+	case 0x9E:
+		// bit1-使能(主机写), bit7-4-状态码(固件维护)
+		// 主机写入时重新恢复状态位
+		reg_new_data[regAddr] = (reg_new_data[regAddr] & 0x0F) | (getSinkExtendedStep << 4);
+		break;
 	default:
 		break;
 	}
@@ -1689,6 +1712,112 @@ void Check_Port_Exist(void)
 	}
 }
 
+// 0x99-0x9E: 读取对端 Sink Capabilities Extended (与参考工程 D40F 一致)
+void GetSinkExtended(void)
+{
+	u8 curProtocol = 0;
+	static u8 curStep = 0;
+	static u16 onlineTime = 0;
+	static u8 lastStep = 0xFF;
+
+	switch (curStep)
+	{
+	case 0:
+		// 使能位: 0x9E bit1
+		if ((reg_new_data[0x9E] & 0x02) != 0x00)
+		{
+			curStep = 1;
+			onlineTime = 0;
+		}
+		break;
+	case 1:
+		// 等待端口在线, 再等 sendComandTime*100 个主循环
+		if ((reg_new_data[0x34] & 0x40) != 0x00)
+		{
+			onlineTime++;
+			if (onlineTime > (u16)(sendComandTime * 100))
+			{
+				getSinkExtendedStep = 1;
+				curStep = 2;
+				onlineTime = 0;
+			}
+		}
+		else
+		{
+			onlineTime = 0;
+		}
+		break;
+	case 2:
+		// 等待 PD 协商完成
+		curProtocol = reg_new_data[0x4B] & 0x7F;
+		if ((curProtocol == FC_PD_Fix5V) || (curProtocol == FC_PD_FixHV) ||
+			(curProtocol == FC_PD_PPS) || (curProtocol == FC_PD_EPR_HV) ||
+			(curProtocol == FC_PD_AVS) || (curProtocol == FC_PD_SPR_AVS))
+		{
+			if (Pd_Is_Ready())
+			{
+				User_Pd_Policy_Get_Sink_Cap_Extended_Run();
+				curStep = 3;
+				getSinkExtendedStep = 2;
+				// printf("[SCE] TX Get_Sink_Cap_Extended (proto=%d, delay=%d)\r\n",
+					//    (unsigned int)curProtocol, (unsigned int)sendComandTime);
+			}
+			else
+			{
+				onlineTime++;
+				if (onlineTime > 1000)
+				{
+					onlineTime = 0;
+					curStep = 3;
+					getSinkExtendedStep = 4;
+					// printf("[SCE] FAIL: Pd_Is_Ready timeout\r\n");
+				}
+			}
+		}
+		else
+		{
+			onlineTime++;
+			if (onlineTime > 2000)
+			{
+				onlineTime = 0;
+				curStep = 3;
+				getSinkExtendedStep = 4;
+				// printf("[SCE] FAIL: no PD protocol\r\n");
+			}
+		}
+		if ((reg_new_data[0x34] & 0x40) == 0x00)
+		{
+			curStep = 1;
+			onlineTime = 0;
+			getSinkExtendedStep = 0;
+		}
+		break;
+	case 3:
+		// 拔出或关闭使能后回到空闲, 允许下次重新触发
+		if ((reg_new_data[0x34] & 0x40) == 0x00)
+		{
+			curStep = 0;
+			getSinkExtendedStep = 0;
+		}
+		else if ((reg_new_data[0x9E] & 0x02) == 0x00)
+		{
+			curStep = 0;
+			getSinkExtendedStep = 0;
+		}
+		break;
+	default:
+		curStep = 0;
+		break;
+	}
+
+	// 0x9E bit7-4 状态码回写: 仅在跳变时写一次
+	if (lastStep != getSinkExtendedStep)
+	{
+		lastStep = getSinkExtendedStep;
+		reg_new_data[0x9E] = (reg_new_data[0x9E] & 0x0F) | (getSinkExtendedStep << 4);
+	}
+}
+
 #define REG_SUM 0x93
 
 // IIC从机主策略
@@ -1710,6 +1839,9 @@ void Slave_Policy(void)
 	RealTime_Update_Register_Data(reg_polling);
 	// 设备是否在线功能实现0x59
 	Check_Port_Exist();
+
+	// 0x99-0x9E: 读取对端 Sink Capabilities Extended
+	GetSinkExtended();
 
 	reg_polling++;
 

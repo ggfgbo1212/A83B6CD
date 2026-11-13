@@ -12,6 +12,8 @@
 #include "pd_message.h"
 #include <string.h>
 
+#include "source_policy.h"
+
 #define TIMEMARKMASK 0X7FFFFFFF
 // u32 SystemTimeCounter = 0;
 
@@ -19,6 +21,10 @@ static const pd_mesg_summ_t *pdRxMessageSummary;
 static const u8 *pdRxBuff;
 static pd_mesg_summ_t *pdTxMessageSummary;
 static u8 *pdTxBuff;
+
+// 0x99-0x9E: Sink Cap Extended 功能相关变量
+extern u8 reg_new_data[0x100];
+extern u8 getSinkExtendedStep;
 
 void Usr_Uart_Init(u32 baudrate)
 {
@@ -341,6 +347,16 @@ static void Pd_Send_Vdo(const unsigned int *data, int count)
     Pd_Tx_Message(count,pdTxBuf);	
 } 
 
+// 发送 Get_Sink_Cap_Extended (0x16 控制消息, 无数据体)
+void User_Pd_Policy_Get_Sink_Cap_Extended_Run(void)
+{
+	pdTxMessageSummary->packet_start = PD_SOP;
+	pdTxMessageSummary->mesg_class = PD_CONTROL_CLASS;
+	pdTxMessageSummary->mesg_type = PD_Get_Sink_Cap_Extended;
+	pdTxBuff = Pd_Get_Tx_Buff_Start_Address(FALSE);
+	Pd_Tx_Message(0, pdTxBuff);
+}
+
 // 串口逻辑
 static bool Analyse_Uart_Msg(usr_uart_msg_t *UartMsg)
 {
@@ -429,6 +445,33 @@ bool User_Pd_Policy_Hook(void)
 	u8 maxVol = 0;			// bit10-9             2
 	u8 maxCur = 0;			// bit6-5              2
 	u8 usbHighestSpeed = 0; // bit2-0     3
+	/* 真我13Pro+ 断充问题：手机请求高压PPS时，源端由5V升到目标电压约需255ms才发PS_RDY，
+	 * 超过手机PPS约250ms的PS_RDY超时；手机不应答后源端连发Soft Reset、随后Hard Reset。
+	 * 这里只记录事件，由Solve_PPS_HardReset_Disconnect_Policy按"高压PPS请求后150~400ms内断充"判定。 */
+	if (Pd_Is_Event_Happen(PD_TX_SOFT_RESET_EVENT))
+	{
+		Pd_Clear_Event(PD_TX_SOFT_RESET_EVENT);
+		// printf("pd tx soft reset\r\n");
+		// Source_Patch_Data.isPdLinkAbnormal = 1;	//源端软复位=本次协商失败
+	}
+	if (Pd_Is_Event_Happen(PD_RX_SOFT_RESET_EVENT))
+	{
+		Pd_Clear_Event(PD_RX_SOFT_RESET_EVENT);
+		// printf("pd rx soft reset\r\n");
+		Source_Patch_Data.revSoftReset = 1;		//设备主动软复位，走原有策略
+	}
+	if (Pd_Is_Event_Happen(PD_RX_HARD_RESET_EVENT))
+	{
+		Pd_Clear_Event(PD_RX_HARD_RESET_EVENT);
+		// printf("pd rx hard reset\r\n");
+		Source_Patch_Data.isPdLinkAbnormal = 1;
+	}
+	if (Pd_Is_Event_Happen(PD_TX_HARD_RESET_EVENT))
+	{
+		Pd_Clear_Event(PD_TX_HARD_RESET_EVENT);
+		// printf("pd tx hard reset\r\n");
+		Source_Patch_Data.isPdLinkAbnormal = 1;
+	}
 
 	// 判断属于PD接收命令
 	if (Pd_Is_Event_Happen(PD_RX_MESSAGE_SUCCESS_EVENT))
@@ -473,6 +516,52 @@ bool User_Pd_Policy_Hook(void)
 
 					pUartMsgBuf->IsRecUnVdmMsg = true;
 					return true;
+				}
+			}
+			// 收到 Sink Capabilities Extended: 头(2)+扩展头(2)+数据区(从 pdRxBuff+4 开始)
+			// 数据区偏移: 0-1 VID, 2-3 PID, 17 Sink Modes
+			else if (PD_Sink_Capabilities_Extended == pdRxMessageSummary->mesg_type)
+			{
+				const u8 *data = NULL;
+				u8 objNum = 0;
+
+				Pd_Clear_Event(PD_RX_MESSAGE_SUCCESS_EVENT);
+				pdRxBuff = Pd_Get_Rx_Buff_Start_Address(TRUE);
+				data = pdRxBuff + 4;
+				objNum = (u8)((pdRxBuff[1] >> 4) & 0x07);
+
+				reg_new_data[0x99] = data[0];	// VID 低字节
+				reg_new_data[0x9A] = data[1];	// VID 高字节
+				reg_new_data[0x9B] = data[2];	// PID 低字节
+				reg_new_data[0x9C] = data[3];	// PID 高字节
+
+				// Sink Modes 在数据区偏移 17, 需数据长度 >= 18 字节
+				if (objNum >= 6)
+				{
+					reg_new_data[0x9F] = data[17];
+					Source_Patch_Data.isSinkModesValid = 1;
+				}
+				else
+				{
+					reg_new_data[0x9F] = 0x00;
+					Source_Patch_Data.isSinkModesValid = 0;
+				}
+
+				getSinkExtendedStep = 3;
+
+				// printf("Sink Cap Ext: VID=0x%04X PID=0x%04X Modes=0x%02X\r\n",
+				// 	   (unsigned int)(((u16)data[1] << 8) | data[0]),
+				// 	   (unsigned int)(((u16)data[3] << 8) | data[2]),
+				// 	   (unsigned int)reg_new_data[0x9F]);
+			}
+			else if (PD_Not_Supported == pdRxMessageSummary->mesg_type)
+			{
+				Pd_Clear_Event(PD_RX_MESSAGE_SUCCESS_EVENT);
+				if (getSinkExtendedStep == 2)
+				{
+					// 只在本功能等待回复时才判失败
+					Source_Clear_SinkModes();
+					getSinkExtendedStep = 5;	//对端明确不支持
 				}
 			}
 		}
